@@ -1,0 +1,349 @@
+#!usr/bin/env ruby
+require 'matrix'
+puts "Welcome to Project 1! We assume an error margin of 0.1 for robot sensors!"
+#puts "Please enter a number of iterations to perform."
+#iterations = gets.chomp
+
+F = Matrix.zero(10, 1)
+F.send(:[]=, 0, 0, 0.1)
+F.send(:[]=, 1, 0, 0.1)
+F.send(:[]=, 2, 0, 0.1)
+F.send(:[]=, 3, 0, 0.1)
+F.send(:[]=, 4, 0, 0.1)
+F.send(:[]=, 5, 0, 0.1)
+F.send(:[]=, 6, 0, 0.1)
+F.send(:[]=, 7, 0, 0.1)
+F.send(:[]=, 8, 0, 0.1)
+F.send(:[]=, 9, 0, 0.1)
+
+transition_mat = Matrix.zero(10)
+transition_mat.send(:[]=, 0, 1, 0.5)
+transition_mat.send(:[]=, 1, 0, 1)
+transition_mat.send(:[]=, 1, 2, 0.5)
+transition_mat.send(:[]=, 2, 1, 0.5)
+transition_mat.send(:[]=, 2, 3, 0.5)
+transition_mat.send(:[]=, 3, 2, 0.5)
+transition_mat.send(:[]=, 3, 4, 0.5)
+transition_mat.send(:[]=, 4, 3, 0.5)
+transition_mat.send(:[]=, 4, 5, 0.5)
+transition_mat.send(:[]=, 5, 4, 0.5)
+transition_mat.send(:[]=, 5, 6, 0.5)
+transition_mat.send(:[]=, 6, 5, 0.5)
+transition_mat.send(:[]=, 6, 7, 0.5)
+transition_mat.send(:[]=, 7, 6, 0.5)
+transition_mat.send(:[]=, 7, 8, 0.5)
+transition_mat.send(:[]=, 8, 7, 0.5)
+transition_mat.send(:[]=, 8, 9, 1)
+transition_mat.send(:[]=, 9, 8, 0.5)
+
+
+#iterations = iterations.to_i
+iter = 0
+
+puts "Please enter a signal input in the form of '0101' for a single iteration or '0101 0001 1010...etc' for multiple iterations(the first value entered will be the signal of the first iteration), (NSEW), 1 indicating the sensor encountering an obstacle."
+entry = gets.chomp
+
+entry = entry.split(' ')
+iterations = entry.length
+while(iter < iterations) do
+
+puts "Iteration #{iter+1}"
+input = entry[iter]
+
+n = 0
+s = 0
+e = 0
+w = 0
+
+o = Matrix.zero(10)
+
+if(input == "0000")
+	o.send(:[]=, 0, 0, 0.0009)
+	o.send(:[]=, 1, 1, 0.0081)
+	o.send(:[]=, 2, 2, 0.0081)
+	o.send(:[]=, 3, 3, 0.0081)
+	o.send(:[]=, 4, 4, 0.0081)
+	o.send(:[]=, 5, 5, 0.0081)
+	o.send(:[]=, 6, 6, 0.0081)
+	o.send(:[]=, 7, 7, 0.0081)
+	o.send(:[]=, 8, 8, 0.0081)
+	o.send(:[]=, 9, 9, 0.0009)
+	
+elsif(input == "0100")
+	s = 1
+	o.send(:[]=, 0, 0, 0.0001)
+	o.send(:[]=, 1, 1, 0.0009)
+	o.send(:[]=, 2, 2, 0.0729)
+	o.send(:[]=, 3, 3, 0.0729)
+	o.send(:[]=, 4, 4, 0.0009)
+	o.send(:[]=, 5, 5, 0.0009)
+	o.send(:[]=, 6, 6, 0.0729)
+	o.send(:[]=, 7, 7, 0.0009)
+	o.send(:[]=, 8, 8, 0.0729)
+	o.send(:[]=, 9, 9, 0.0081)
+
+elsif(input == "0010")
+	e = 1
+	o.send(:[]=, 0, 0, 0.0081)
+	o.send(:[]=, 1, 1, 0.0729)
+	o.send(:[]=, 2, 2, 0.0009)
+	o.send(:[]=, 3, 3, 0.0009)
+	o.send(:[]=, 4, 4, 0.0729)
+	o.send(:[]=, 5, 5, 0.0729)
+	o.send(:[]=, 6, 6, 0.0729)
+	o.send(:[]=, 7, 7, 0.0009)
+	o.send(:[]=, 8, 8, 0.0729)
+	o.send(:[]=, 9, 9, 0.0001)
+
+elsif(input == "0011")
+	e = 1
+	w = 1
+	o.send(:[]=, 0, 0, 0.0729)
+	o.send(:[]=, 1, 1, 0.6561)
+	o.send(:[]=, 2, 2, 0.0081)
+	o.send(:[]=, 3, 3, 0.0001)
+	o.send(:[]=, 4, 4, 0.0081)
+	o.send(:[]=, 5, 5, 0.6561)
+	o.send(:[]=, 6, 6, 0.0081)
+	o.send(:[]=, 7, 7, 0.0081)
+	o.send(:[]=, 8, 8, 0.0081)
+	o.send(:[]=, 9, 9, 0.0009)
+
+elsif(input == "0001")
+	w = 1
+	o.send(:[]=, 0, 0, 0.0081)
+	o.send(:[]=, 1, 1, 0.0729)
+	o.send(:[]=, 2, 2, 0.0729)
+	o.send(:[]=, 3, 3, 0.0009)
+	o.send(:[]=, 4, 4, 0.0009)
+	o.send(:[]=, 5, 5, 0.0729)
+	o.send(:[]=, 6, 6, 0.0009)
+	o.send(:[]=, 7, 7, 0.0729)
+	o.send(:[]=, 8, 8, 0.0009)
+	o.send(:[]=, 9, 9, 0.0081)
+
+elsif(input == "0101")
+	s = 1
+	w = 1
+	o.send(:[]=, 0, 0, 0.0009)
+	o.send(:[]=, 1, 1, 0.0081)
+	o.send(:[]=, 2, 2, 0.6561)
+	o.send(:[]=, 3, 3, 0.0081)
+	o.send(:[]=, 4, 4, 0.0001)
+	o.send(:[]=, 5, 5, 0.0081)
+	o.send(:[]=, 6, 6, 0.0081)
+	o.send(:[]=, 7, 7, 0.0081)
+	o.send(:[]=, 8, 8, 0.0081)
+	o.send(:[]=, 9, 9, 0.0729)
+
+elsif(input == "0110")
+	s = 1
+	e = 1
+	o.send(:[]=, 0, 0, 0.0009)
+	o.send(:[]=, 1, 1, 0.0081)
+	o.send(:[]=, 2, 2, 0.0081)
+	o.send(:[]=, 3, 3, 0.0081)
+	o.send(:[]=, 4, 4, 0.0081)
+	o.send(:[]=, 5, 5, 0.0081)
+	o.send(:[]=, 6, 6, 0.6561)
+	o.send(:[]=, 7, 7, 0.0001)
+	o.send(:[]=, 8, 8, 0.6561)
+	o.send(:[]=, 9, 9, 0.0009)
+
+elsif(input == "0111")
+	s = 1
+	e = 1
+	w = 1
+	o.send(:[]=, 0, 0, 0.0081)
+	o.send(:[]=, 1, 1, 0.0729)
+	o.send(:[]=, 2, 2, 0.0729)
+	o.send(:[]=, 3, 3, 0.0009)
+	o.send(:[]=, 4, 4, 0.0009)
+	o.send(:[]=, 5, 5, 0.0729)
+	o.send(:[]=, 6, 6, 0.729)
+	o.send(:[]=, 7, 7, 0.0009)
+	o.send(:[]=, 8, 8, 0.0729)
+	o.send(:[]=, 9, 9, 0.0081)
+
+elsif(input == "1000")
+	n = 1
+	o.send(:[]=, 0, 0, 0.0081)
+	o.send(:[]=, 1, 1, 0.0009)
+	o.send(:[]=, 2, 2, 0.0009)
+	o.send(:[]=, 3, 3, 0.0729)
+	o.send(:[]=, 4, 4, 0.0729)
+	o.send(:[]=, 5, 5, 0.0009)
+	o.send(:[]=, 6, 6, 0.0009)
+	o.send(:[]=, 7, 7, 0.0729)
+	o.send(:[]=, 8, 8, 0.0009)
+	o.send(:[]=, 9, 9, 0.0081)
+
+elsif(input == "1001")
+	n = 1
+	w = 1
+	o.send(:[]=, 0, 0, 0.0729)
+	o.send(:[]=, 1, 1, 0.0081)
+	o.send(:[]=, 2, 2, 0.0081)
+	o.send(:[]=, 3, 3, 0.0081)
+	o.send(:[]=, 4, 4, 0.0081)
+	o.send(:[]=, 5, 5, 0.0081)
+	o.send(:[]=, 6, 6, 0.0001)
+	o.send(:[]=, 7, 7, 0.6561)
+	o.send(:[]=, 8, 8, 0.0001)
+	o.send(:[]=, 9, 9, 0.0729)
+
+elsif(input == "1010")
+	n = 1
+	e = 1
+	o.send(:[]=, 0, 0, 0.0729)
+	o.send(:[]=, 1, 1, 0.0081)
+	o.send(:[]=, 2, 2, 0.0001)
+	o.send(:[]=, 3, 3, 0.0081)
+	o.send(:[]=, 4, 4, 0.6561)
+	o.send(:[]=, 5, 5, 0.0081)
+	o.send(:[]=, 6, 6, 0.0081)
+	o.send(:[]=, 7, 7, 0.0081)
+	o.send(:[]=, 8, 8, 0.0081)
+	o.send(:[]=, 9, 9, 0.0009)
+
+elsif(input == "1011")
+	n = 1
+	e = 1
+	w = 1
+	o.send(:[]=, 0, 0, 0.6561)
+	o.send(:[]=, 1, 1, 0.0729)
+	o.send(:[]=, 2, 2, 0.0009)
+	o.send(:[]=, 3, 3, 0.0009)
+	o.send(:[]=, 4, 4, 0.0081)
+	o.send(:[]=, 5, 5, 0.0729)
+	o.send(:[]=, 6, 6, 0.0009)
+	o.send(:[]=, 7, 7, 0.0729)
+	o.send(:[]=, 8, 8, 0.0009)
+	o.send(:[]=, 9, 9, 0.0081)
+
+elsif(input == "1100")
+	n = 1
+	s = 1
+	o.send(:[]=, 0, 0, 0.0009)
+	o.send(:[]=, 1, 1, 0.0001)
+	o.send(:[]=, 2, 2, 0.0081)
+	o.send(:[]=, 3, 3, 0.6561)
+	o.send(:[]=, 4, 4, 0.0081)
+	o.send(:[]=, 5, 5, 0.0001)
+	o.send(:[]=, 6, 6, 0.0081)
+	o.send(:[]=, 7, 7, 0.0081)
+	o.send(:[]=, 8, 8, 0.0081)
+	o.send(:[]=, 9, 9, 0.0729)
+
+elsif(input == "1101")
+	n = 1
+	s = 1
+	w = 1
+	o.send(:[]=, 0, 0, 0.0081)
+	o.send(:[]=, 1, 1, 0.0009)
+	o.send(:[]=, 2, 2, 0.0729)
+	o.send(:[]=, 3, 3, 0.0729)
+	o.send(:[]=, 4, 4, 0.0009)
+	o.send(:[]=, 5, 5, 0.0009)
+	o.send(:[]=, 6, 6, 0.0009)
+	o.send(:[]=, 7, 7, 0.0729)
+	o.send(:[]=, 8, 8, 0.0009)
+	o.send(:[]=, 9, 9, 0.6561)
+
+elsif(input == "1110")
+	n = 1
+	s = 1
+	e = 1
+	o.send(:[]=, 0, 0, 0.0081)
+	o.send(:[]=, 1, 1, 0.0009)
+	o.send(:[]=, 2, 2, 0.0009)
+	o.send(:[]=, 3, 3, 0.0729)
+	o.send(:[]=, 4, 4, 0.0729)
+	o.send(:[]=, 5, 5, 0.0009)
+	o.send(:[]=, 6, 6, 0.0729)
+	o.send(:[]=, 7, 7, 0.0009)
+	o.send(:[]=, 8, 8, 0.0729)
+	o.send(:[]=, 9, 9, 0.0081)
+
+elsif(input == "1111")
+	n = 1
+	s = 1
+	e = 1
+	w = 1
+	o.send(:[]=, 0, 0, 0.0729)
+	o.send(:[]=, 1, 1, 0.0081)
+	o.send(:[]=, 2, 2, 0.0081)
+	o.send(:[]=, 3, 3, 0.0081)
+	o.send(:[]=, 4, 4, 0.0081)
+	o.send(:[]=, 5, 5, 0.0081)
+	o.send(:[]=, 6, 6, 0.0081)
+	o.send(:[]=, 7, 7, 0.0081)
+	o.send(:[]=, 8, 8, 0.0081)
+	o.send(:[]=, 9, 9, 0.0729)
+
+end
+
+puts "Input:"
+puts input
+
+discrepency_table = {0 => 0.6561, 1 => 0.0729, 2 => 0.0081, 3 => 0.0009, 4 => 0.0001}
+
+#puts "F = "
+#puts F=end
+
+y = transition_mat * F
+z = o * y
+
+#puts "Y = "
+#puts z
+#puts "Z = "
+#puts z
+
+vector_Z = z.column(0)
+
+#puts "Z vector: "
+#puts vector_Z
+
+sum = 0
+vector_Z.each { |a| sum+=a }
+
+#puts "sum = "
+#puts sum
+
+temp_Fval = 0
+
+i = 0
+max = 0
+max_array = Array.new
+while i < 10 do
+	temp_Fval = z[i,0]/sum
+	if(temp_Fval >= max)
+		max = temp_Fval
+		max_array.push(i)
+	end
+	F.send(:[]=, i, 0, temp_Fval) 
+	i+=1
+end
+#puts "Max_array: "
+#puts max_array
+i = 0
+b = 0
+print "Max probability = "
+puts max
+print "Square(s) with max_probability: "
+while i <= max_array.length
+	b = max_array.pop
+	#puts "got past b - first line in while loop"
+	#puts F[b, 0] 
+	if(F[b, 0] == max)
+	print "Square ", b, "  "
+	end
+	i=i+1
+end
+puts ""
+
+puts "New F: "
+puts F
+
+iter = iter+1
+end

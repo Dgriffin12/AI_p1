@@ -1,0 +1,108 @@
+#!usr/bin/env ruby
+require 'matrix'
+puts "Welcome to Project 1! We assume an error margin of 0.1 for robot sensors!"
+puts "Please enter a signal input in the form of '0101', (NSEW), 1 indicating the sensor encountering an obstacle."
+input = gets.chomp
+
+input = input.to_i
+
+transition_mat = Matrix.zero(10)
+transition_mat.send(:[]=, 0, 1, 0.5)
+transition_mat.send(:[]=, 1, 0, 0.5)
+transition_mat.send(:[]=, 1, 2, 0.5)
+transition_mat.send(:[]=, 2, 1, 0.5)
+transition_mat.send(:[]=, 2, 3, 0.5)
+transition_mat.send(:[]=, 3, 2, 0.5)
+transition_mat.send(:[]=, 3, 4, 0.5)
+transition_mat.send(:[]=, 4, 3, 0.5)
+transition_mat.send(:[]=, 4, 5, 0.5)
+transition_mat.send(:[]=, 5, 4, 0.5)
+transition_mat.send(:[]=, 5, 6, 0.5)
+transition_mat.send(:[]=, 6, 5, 0.5)
+transition_mat.send(:[]=, 6, 7, 0.5)
+transition_mat.send(:[]=, 7, 6, 0.5)
+transition_mat.send(:[]=, 7, 8, 0.5)
+transition_mat.send(:[]=, 8, 7, 0.5)
+transition_mat.send(:[]=, 8, 9, 0.5)
+transition_mat.send(:[]=, 9, 8, 1)
+
+N = 0
+S = 0
+E = 0
+W = 0
+
+if(input == 0000)
+	
+elsif(input == 0001)
+	W = 1
+elsif(input == 0010)
+	E = 1
+elsif(input == 0011)
+	E = 1
+	W = 1
+elsif(input == 0100)
+	S = 1
+elsif(input == 0101)
+	S = 1
+	W = 1
+elsif(input == 0110)
+	S = 1
+	E = 1
+elsif(input == 0111)
+	S = 1
+	E = 1
+	W = 1
+elsif(input == 1000)
+	N = 1
+elsif(input == 1001)
+	N = 1
+	W = 1
+elsif(input == 1010)
+	N = 1
+	E = 1
+elsif(input == 1011)
+	N = 1
+	E = 1
+	W = 1
+elsif(input == 1100)
+	N = 1
+	S = 1
+elsif(input == 1101)
+	N = 1
+	S = 1
+	W = 1
+elsif(input == 1110)
+	N = 1
+	S = 1
+	E = 1
+elsif(input == 1111)
+	N = 1
+	S = 1
+	E = 1
+	W = 1
+end
+
+
+puts N
+puts S
+puts E
+puts W
+
+discrepency_table = {0 => 0.6561, 1 => 0.0729, 2 => 0.0081, 3 => 0.0009, 4 => 0.0001}
+puts discrepency_table
+
+F = Matrix.zero(10, 1)
+F.send(:[]=, 0, 0, 0.1)
+F.send(:[]=, 1, 0, 0.1)
+F.send(:[]=, 2, 0, 0.1)
+F.send(:[]=, 3, 0, 0.1)
+F.send(:[]=, 4, 0, 0.1)
+F.send(:[]=, 5, 0, 0.1)
+F.send(:[]=, 6, 0, 0.1)
+F.send(:[]=, 7, 0, 0.1)
+F.send(:[]=, 8, 0, 0.1)
+F.send(:[]=, 9, 0, 0.1)
+
+R_F_mult = transition_mat * F
+
+puts R_F_mult

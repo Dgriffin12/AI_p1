@@ -1,0 +1,98 @@
+#!usr/bin/env ruby
+
+puts "Please enter a signal input in the form of '0101', (NSEW), 1 indicating the sensor encountering an obstacle."
+
+transition_mat = matrix.empty(10,10)
+transition_mat
+
+input = gets.chomp
+
+input.to_i!
+
+
+if(input == 0000)
+{
+	N = 0
+	S = 0
+	E = 0
+	W = 0
+}elsif(input == 0001)
+	N = 0
+	S = 0
+	E = 0
+	W = 0
+}elsif(input == 0010)
+	N = 0
+	S = 0
+	E = 1
+	W = 0
+}elsif(input == 0011)
+	N = 0
+	S = 0
+	E = 1
+	W = 1
+}elsif(input == 0100)
+	N = 0
+	S = 1
+	E = 0
+	W = 0
+}elsif(input == 0101)
+	N = 0
+	S = 1
+	E = 0
+	W = 1
+}elsif(input == 0110)
+	N = 0
+	S = 1
+	E = 1
+	W = 0
+}elsif(input == 0111)
+	N = 0
+	S = 1
+	E = 1
+	W = 1
+}elsif(input == 1000)
+	N = 1
+	S = 0
+	E = 0
+	W = 0
+}elsif(input == 1001)
+	N = 1
+	S = 0
+	E = 0
+	W = 1 
+}elsif(input == 1010)
+	N = 1
+	S = 0
+	E = 1
+	W = 0
+}elsif(input == 1011)
+	N = 1
+	S = 0
+	E = 1
+	W = 1
+}elsif(input == 1100)
+	N = 1
+	S = 1
+	E = 0
+	W = 0
+}elsif(input == 1101)
+	N = 1
+	S = 1
+	E = 0
+	W = 1
+}elsif(input == 1110)
+	N = 1
+	S = 1
+	E = 1
+	W = 0
+}elsif(input == 1111)
+	N = 1
+	S = 1
+	E = 1
+	W = 1
+}else
+{
+}
+
+
