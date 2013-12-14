@@ -1,0 +1,382 @@
+#!usr/bin/env ruby
+counter = 0
+inputstring = []
+inputobs = []
+inputstates = []
+inputobfile = File.new("input_observations.txt", "r")
+while(inputobs[counter] = inputobfile.gets)
+	counter = counter + 1
+end
+inputstatefile = File.new("input_states.txt", "r")
+while(inputstates[counter] = inputstatefile.gets)
+	counter = counter + 1
+end
+counter = 0
+#inputstring[0].each_char do |char|
+#	inputobs[counter] = char.to_i
+#	counter = counter + 1
+#end
+
+inputstates.each do |a|
+	a = a.to_c
+end
+inputobs[counter-1] = nil
+inputobs.compact!
+puts ""
+puts "Input Observations: "
+
+inputobs.map! { |s| s.to_i }
+inputobs.compact!
+#puts inputobs
+#puts "------------------------------"
+
+inputstates.compact!
+#puts inputstates
+
+inputobs.each do |a|
+	if a == 0
+		print "H"
+	elsif a == 1
+		print "T"
+	end
+end
+
+puts "" #Line Break
+numstates = inputstates.size
+#puts numstates
+#simultates an input file above
+inputprob = []
+counter = 0
+inprobfile = File.new("input_probabilities.txt", "r")
+while(inputprob[counter] = inprobfile.gets)
+	counter = counter + 1
+end
+inputprob.map! { |s| s.to_f }
+#puts inputprob
+#puts inputprob[8]
+
+fB = [inputprob[6]]
+fL = [inputprob[7]]
+pbb = inputprob[0]
+pbl = inputprob[2]
+plb = inputprob[1]
+pll = inputprob[3]
+phb = inputprob[4]
+ptb = 1-inputprob[4]
+phl = inputprob[5]
+ptl = 1-inputprob[5]
+puts "Input Probabilites"
+puts "P(B | B) = #{pbb}"
+puts "P(B | L) = #{pbl}"
+puts "P(L | B) = #{plb}"
+puts "P(L | L) = #{pll}"
+puts "P(H | B) = #{phb}"
+puts "P(T | B) = #{ptb}"
+puts "P(H | L) = #{phl}"
+puts "P(T | L) = #{ptl}"
+puts "---------------------------------------"
+puts "Enter # of iterations for EM Algorithm: "
+entry = gets.chomp
+entry = entry.to_i
+#puts entry
+
+#input start probabilities above
+itercounter = 0
+while itercounter < entry do
+
+counter = 0
+
+while counter < numstates do
+	if inputobs[counter] == 0
+		fB[counter+1] = phb*((fB[counter]*pbb)+(fL[counter]*pbl))	
+		fL[counter+1] = phl*((fB[counter]*plb)+(fL[counter]*pll))
+	else
+		fB[counter+1] = ptb*((fB[counter]*pbb)+(fL[counter]*pbl))	
+		fL[counter+1] = ptl*((fB[counter]*plb)+(fL[counter]*pll))
+	end
+	counter = counter + 1	
+end
+
+bB = []
+bL = []
+bB[numstates-1] = fB[0]
+bL[numstates-1] = fB[0]
+counter = numstates-1
+while counter > 0 do	
+	if inputobs[counter-1] == 0
+		bB[counter-1] = bB[counter]*phb*pbb+bL[counter]*phl*plb	
+		bL[counter-1] = bB[counter]*phb*pbl+bL[counter]*phl*pll
+	else
+		bB[counter-1] = bB[counter]*ptb*pbb+bL[counter]*plb*ptl	
+		bL[counter-1] = bB[counter]*ptb*pbl+bL[counter]*pll*ptl
+	end	
+	counter = counter - 1
+end
+
+pe1n = fB[numstates]*0.5+fL[numstates]*0.5
+puts "Pe1n: #{pe1n}"
+counter = 0
+bBnot_normalized_probs = []
+bLnot_normalized_probs = []
+lBnot_normalized_probs = []
+lLnot_normalized_probs = []
+
+heads = []
+tails = []
+hcount = 0
+tcount = 0
+while counter < numstates-1 do
+		if inputobs[counter] == 0		
+			bBnot_normalized_probs[counter] = (fB[counter]*pbb*phb*bB[counter+1])/ pe1n	
+			lBnot_normalized_probs[counter] = (fB[counter]*plb*phl*bL[counter+1])/ pe1n
+			bLnot_normalized_probs[counter] = (fL[counter]*pbl*phb*bB[counter+1])/pe1n	
+			lLnot_normalized_probs[counter] = (fL[counter]*pll*phl*bL[counter+1])/pe1n
+			heads[hcount] = counter
+			hcount = hcount + 1
+		else
+			bBnot_normalized_probs[counter] = (fB[counter]*pbb*ptb*bB[counter+1])/ pe1n	
+			lBnot_normalized_probs[counter] = (fB[counter]*plb*ptl*bL[counter+1])/pe1n	
+			bLnot_normalized_probs[counter] = (fL[counter]*pbl*ptb*bB[counter+1])/pe1n	
+			lLnot_normalized_probs[counter] = (fL[counter]*pll*ptl*bL[counter+1])/pe1n
+			tails[tcount] = counter
+			tcount = tcount + 1
+		end				
+	
+	counter = counter + 1
+end	
+
+
+phatBB = bBnot_normalized_probs.reduce :+
+phatBL = bLnot_normalized_probs.reduce :+
+phatLB = lBnot_normalized_probs.reduce :+
+phatLL = lLnot_normalized_probs.reduce :+
+
+pbb = phatBB / (phatBB + phatLB)
+puts "#{phatBB} / #{phatBB} + #{phatLB}"
+pbl = phatBL / (phatBL + phatLL)
+puts "#{phatBL} / #{phatBL} + #{phatLL}"
+plb = phatLB / (phatLB + phatBB)
+puts "#{phatLB} / #{phatBB} + #{phatLB}"
+pll = phatLL / (phatLL + phatBL)
+puts "#{phatLL} / #{phatLL} + #{phatBL}"
+
+phatHB = 0
+phatTB = 0
+phatHL = 0
+phatTL = 0
+sumphatHB = 0
+sumphatTB = 0
+sumphatHL = 0
+sumphatTL = 0
+puts "P(B | B) = #{pbb}"
+puts "P(B | L) = #{pbl}"
+puts "P(L | B) = #{plb}"
+puts "P(L | L) = #{pll}"
+heads.each do |head|
+	sumphatHB = sumphatHB + (fB[head+1]*bB[head+1])
+end
+phatHB = sumphatHB / pe1n
+
+heads.each do |head|
+	sumphatHL = sumphatHL + (fL[head+1]*bL[head+1])
+end
+phatHL = sumphatHL / pe1n
+
+tails.each do |tail|
+	sumphatTB = sumphatTB + (fB[tail+1]*bB[tail+1])
+end
+phatTB = sumphatTB / pe1n
+
+tails.each do |tail|
+	sumphatTL = sumphatTL + (fL[tail+1]*bL[tail+1])
+end
+phatTL = sumphatTL / pe1n
+
+pHB = phatHB / (phatHB + phatTB)
+pHL = phatHL / (phatHL + phatTL)
+pTB = phatTB / (phatTB + phatHB)
+pTL = phatTL / (phatTL + phatHL)
+puts "---------------------------------------"
+puts "Iteration: #{itercounter+1}"
+puts "EM Outputs: "
+puts "P(H | B) = #{pHB}"
+puts "P(T | B) = #{pTB}"
+puts "P(H | L) = #{pHL}"
+puts "P(T | L) = #{pTL}"
+
+
+itercounter = itercounter + 1
+
+end
+
+#Viterbi
+
+viterbiprobHB = [fB[0]]
+viterbiprobHL = [fL[0]]
+viterbiprobTB = [fB[0]]
+viterbiprobTL = [fL[0]]
+viterbistates = []
+counter = 0
+pbb = 0.6
+pbl = 0.3
+plb = 0.4
+pll = 0.7
+phb = 0.5
+ptb = 1-phb
+phl = 0.1
+ptl = 1-phl
+#puts "viterbi probs HMM: "
+#puts pbb
+#puts pbl
+#puts plb
+#puts phb
+#puts ptb
+#puts phl
+#puts ptl
+
+viterbiBprob = []
+viterbiLprob = []
+
+while counter < numstates do
+#	puts counter
+	if inputobs[counter] == 0 && counter == 0
+		viterbiprobHB[counter+1] = phb * [(pbb * fB[0]), (pbl * fL[0])].max
+		viterbiprobHL[counter+1] = phl * [(plb * fB[0]),( pll * fL[0])].max
+		#puts viterbiprobHL[counter+1]
+		if viterbiprobHB[counter+1] > viterbiprobHL[counter+1]
+			viterbistates[counter] = 'B'
+			viterbiBprob[counter] = viterbiprobHB[counter+1]
+		elsif viterbiprobHL[counter+1] > viterbiprobHB[counter+1]
+			viterbistates[counter] = 'L'
+			viterbiLprob[counter] = viterbiprobHL[counter+1]
+		end		
+	elsif inputobs[counter] == 1 && counter == 0
+		viterbiprobTB[counter+1] = ptb * [(pbb * fB[0]), (pbl * fL[0])].max
+		viterbiprobTL[counter+1] = ptl * [(plb * fB[0]), (pll * fL[0])].max
+		#	puts "HERE"
+#		puts viterbiprobTB[counter+1]
+#		puts viterbiprobTL[counter+1]
+		if viterbiprobTB[counter+1] > viterbiprobTL[counter+1]
+			viterbistates[counter] = 'B'
+			viterbiBprob[counter] = viterbiprobTB[counter+1]
+		elsif viterbiprobTL[counter+1] > viterbiprobTB[counter+1]
+			viterbistates[counter] = 'L'
+			viterbiLprob[counter] = viterbiprobTL[counter+1]
+		end		
+	end
+
+	if counter > 0
+		if inputobs[counter-1] == 0
+			if inputobs[counter] == 0
+				viterbiprobHB[counter+1] = phb * [(pbb*viterbiprobHB[counter]),(pbl*viterbiprobHL[counter])].max
+				viterbiprobHL[counter+1] = phl * [(plb*viterbiprobHB[counter]),(pll*viterbiprobHL[counter])].max
+				if viterbiprobHB[counter+1] > viterbiprobHL[counter+1]
+					viterbiBprob[counter] = viterbiprobHB[counter+1]
+					viterbistates[counter] = 'B'
+				elsif viterbiprobHL[counter+1] > viterbiprobHB[counter+1]
+					viterbistates[counter] = 'L'
+					viterbiLprob[counter] = viterbiprobHL[counter+1]
+				end				
+			else
+				viterbiprobTB[counter+1] = ptb * [(pbb*viterbiprobHB[counter]),(pbl*viterbiprobHL[counter])].max
+				viterbiprobTL[counter+1] = ptl * [(plb*viterbiprobHB[counter]),(pll*viterbiprobHL[counter])].max
+		#		puts "#{viterbiprobTB[counter+1]} = #{ptb} *max( #{pbb} * #{phb} , #{pbl} * #{phl} )"
+		#		puts viterbiprobTL[counter+1]	
+	
+				if viterbiprobTB[counter+1] > viterbiprobTL[counter+1]
+					viterbistates[counter] = 'B'
+					viterbiBprob[counter] = viterbiprobTB[counter+1]
+				elsif viterbiprobTL[counter+1] > viterbiprobTB[counter+1]
+					viterbiLprob[counter] = viterbiprobTL[counter+1]
+					viterbistates[counter] = 'L'
+				end
+			end
+		else
+			if inputobs[counter] == 0
+				viterbiprobHB[counter+1] = phb * [ (pbb*viterbiprobTB[counter]), (pbl*viterbiprobTL[counter])].max
+				viterbiprobHL[counter+1] = phl * [ (plb*viterbiprobTB[counter]), (pll*viterbiprobTL[counter])].max				
+				if viterbiprobHB[counter+1] > viterbiprobHL[counter+1]
+					viterbistates[counter] = 'B'
+					viterbiBprob[counter] = viterbiprobHB[counter+1]
+				elsif viterbiprobHL[counter+1] > viterbiprobHB[counter+1]
+					viterbistates[counter] = 'L'
+					viterbiLprob[counter] = viterbiprobHL[counter+1]
+				end				
+			else
+				viterbiprobTB[counter+1] = ptb * [(pbb*viterbiprobTB[counter]),(pbl*viterbiprobTL[counter])].max
+				viterbiprobTL[counter+1] = ptl * [(plb*viterbiprobTB[counter]),(pll*viterbiprobTL[counter])].max
+				if viterbiprobTB[counter+1] > viterbiprobTL[counter+1]
+					viterbistates[counter] = 'B'
+					viterbiBprob[counter] = viterbiprobTB[counter+1]
+				elsif viterbiprobTL[counter+1] > viterbiprobTB[counter+1]
+					viterbistates[counter] = 'L'
+					viterbiLprob[counter] = viterbiprobTL[counter+1]
+				end
+			end
+		end
+	end
+	counter = counter + 1
+end
+
+#puts " ----------------"
+#puts viterbiprobHB
+#puts " ----------------"
+#puts viterbiprobTB
+#puts " ----------------"
+#puts viterbiprobHL
+#puts " ----------------"
+#puts viterbiprobTL
+puts "---------------------------------------"
+puts "---------------------------------------"
+puts "Viterbi Most Likely State Sequence: "
+#puts viterbistates
+
+
+
+#puts "Last: "
+#puts viterbiBprob
+#puts "---------"
+#puts viterbiLprob
+
+actual_states = inputstates
+
+actual_states.map! {|x| x.chomp }
+
+a_and_vH = 0
+a_and_vT = 0
+total_B = 0
+total_L = 0
+counter = 0
+while counter < numstates
+	if viterbistates[counter] == 'B' && (actual_states[counter] == viterbistates[counter])
+		a_and_vH = a_and_vH + 1
+	elsif viterbistates[counter] == 'L' && (actual_states[counter] == viterbistates[counter])
+		a_and_vT = a_and_vT + 1	
+	end		
+	if(actual_states[counter] == 'B')
+		total_B = total_B + 1
+	elsif(actual_states[counter] == 'L')
+		total_L = total_L + 1
+	end
+	counter = counter + 1
+end	
+
+
+#actual_states.each do |a|
+#	putc a
+#end
+#puts ""
+viterbistates.each do |a|
+	putc a
+end
+puts ""
+puts "---------------------------------------"
+
+puts "Sensitivity = #{a_and_vH} / #{total_B}"
+sensitivity = (a_and_vH.to_f / total_B.to_f)
+puts sensitivity
+puts "Specificity = #{a_and_vT} / #{total_L}"
+specificity = (a_and_vT.to_f / total_L.to_f)
+puts specificity
+
+puts "1 - spec = #{1-specificity.to_f}"

@@ -285,7 +285,8 @@ end
 
 puts "Input:"
 puts input
-
+puts "Transition MAT"
+puts transition_mat
 discrepency_table = {0 => 0.6561, 1 => 0.0729, 2 => 0.0081, 3 => 0.0009, 4 => 0.0001}
 
 #puts "F = "
@@ -294,8 +295,9 @@ discrepency_table = {0 => 0.6561, 1 => 0.0729, 2 => 0.0081, 3 => 0.0009, 4 => 0.
 y = transition_mat * F
 z = o * y
 
-#puts "Y = "
-#puts z
+puts discrepency_table
+puts "Y = "
+puts y
 #puts "Z = "
 #puts z
 

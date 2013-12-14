@@ -1,0 +1,150 @@
+#!usr/bin/env ruby
+
+counter = 0
+inputstates = []
+instatesfile = File.new("input_states.txt", "r")
+while(inputstates
+inputstates = [0, 1, 1, 1, 1, 0, 1, 1, 1]
+numstates = inputstates.size
+#simultates an input file above
+inputprob = []
+counter = 0
+inprobfile = File.new("input_probabilities.txt", "r")
+while(inputprob[counter] = inprobfile.gets)
+	counter = counter + 1
+end
+inputprob.map! { |s| s.to_f }
+puts inputprob
+puts "Enter # of iterations for EM Algorithm: "
+entry = gets.chomp
+entry = entry.to_i
+puts entry
+
+fB = [inputprob[6]]
+fL = [inputprob[7]]
+pbb = inputprob[0]
+pbl = inputprob[2]
+plb = inputprob[1]
+pll = inputprob[3]
+phb = inputprob[4]
+ptb = 1-inputprob[4]
+phl = inputprob[5]
+ptl = 1-inputprob[5]
+#input start probabilities above
+itercounter = 0
+while itercounter < entry do
+
+counter = 0
+
+while counter < numstates do
+	if inputstates[counter] == 0
+		fB[counter+1] = phb*((fB[counter]*pbb)+(fL[counter]*pbl))	
+		fL[counter+1] = phl*((fB[counter]*plb)+(fL[counter]*pll))
+	else
+		fB[counter+1] = ptb*((fB[counter]*pbb)+(fL[counter]*pbl))	
+		fL[counter+1] = ptl*((fB[counter]*plb)+(fL[counter]*pll))
+	end
+	counter = counter + 1	
+end
+
+bB = []
+bL = []
+bB[numstates] = fB[0]
+bL[numstates] = fB[0]
+
+while counter > 0 do	
+	if inputstates[counter-1] == 0
+		bB[counter-1] = bB[counter]*phb*pbb+bL[counter]*phl*plb	
+		bL[counter-1] = bB[counter]*phb*pbl+bL[counter]*phl*pll
+	else
+		bB[counter-1] = bB[counter]*ptb*pbb+bL[counter]*plb*ptl	
+		bL[counter-1] = bB[counter]*ptb*pbl+bL[counter]*pll*ptl
+	end	
+	counter = counter - 1
+end
+
+pe1n = bB[0]
+
+counter = 0
+BBnot_normalized_probs = []
+BLnot_normalized_probs = []
+LBnot_normalized_probs = []
+LLnot_normalized_probs = []
+
+heads = []
+tails = []
+hcount = 0
+tcount = 0
+while counter < numstates do
+		if inputstates[counter] == 0		
+			BBnot_normalized_probs[counter] = (fB[counter]*pbb*phb*bB[counter+1])/ pe1n	
+			LBnot_normalized_probs[counter] = (fB[counter]*plb*phl*bL[counter+1])/ pe1n
+			BLnot_normalized_probs[counter] = (fL[counter]*pbl*phb*bB[counter+1])/pe1n	
+			LLnot_normalized_probs[counter] = (fL[counter]*pll*phl*bL[counter+1])/pe1n
+			heads[hcount] = counter
+			hcount = hcount + 1
+		else
+			BBnot_normalized_probs[counter] = (fB[counter]*pbb*ptb*bB[counter+1])/ pe1n	
+			LBnot_normalized_probs[counter] = (fB[counter]*plb*ptl*bL[counter+1])/pe1n	
+			BLnot_normalized_probs[counter] = (fL[counter]*pbl*ptb*bB[counter+1])/pe1n	
+			LLnot_normalized_probs[counter] = (fL[counter]*pll*ptl*bL[counter+1])/pe1n
+			tails[tcount] = counter
+			tcount = tcount + 1
+		end				
+	
+	counter = counter + 1
+end	
+
+phatBB = BBnot_normalized_probs.reduce :+
+phatBL = BLnot_normalized_probs.reduce :+
+phatLB = LBnot_normalized_probs.reduce :+
+phatLL = LLnot_normalized_probs.reduce :+
+
+pbb = phatBB / (phatBB + phatLB)
+pbl = phatBL / (phatBL + phatLL)
+plb = phatLB / (phatLB + phatBB)
+pll = phatLL / (phatLL + phatBL)
+
+phatHB = 0
+phatTB = 0
+phatHL = 0
+phatTL = 0
+sumphatHB = 0
+sumphatTB = 0
+sumphatHL = 0
+sumphatTL = 0
+
+heads.each do |head|
+	sumphatHB = sumphatHB + (fB[head+1]*bB[head+1])
+end
+phatHB = sumphatHB / pe1n
+
+heads.each do |head|
+	sumphatHL = sumphatHL + (fL[head+1]*bL[head+1])
+end
+phatHL = sumphatHL / pe1n
+
+tails.each do |tail|
+	sumphatTB = sumphatTB + (fB[tail+1]*bB[tail+1])
+end
+phatTB = sumphatTB / pe1n
+
+tails.each do |tail|
+	sumphatTL = sumphatTL + (fL[tail+1]*bL[tail+1])
+end
+phatTL = sumphatTL / pe1n
+
+pHB = phatHB / (phatHB + phatTB)
+pHL = phatHL / (phatHL + phatTL)
+pTB = phatTB / (phatTB + phatHB)
+pTL = phatTL / (phatTL + phatHL)
+
+puts pHB
+puts pHL
+puts pTB
+puts pTL
+
+
+itercounter = itercounter + 1
+
+end
